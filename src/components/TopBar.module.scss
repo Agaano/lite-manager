@@ -1,0 +1,48 @@
+@import '../colors.scss';
+
+.header {
+	background-color: $button-color;
+	width: 830px;
+	height: 40px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	span {
+		padding-left: 15px;
+		font-size: 20px;
+	}
+	div {
+		height: 100%;
+		display: flex;
+		align-items: center;
+	}
+
+	* {
+		user-select: none;
+	}
+
+	button {
+		height: 100%;
+		width: 70px;
+		background-color: transparent;
+		outline: none;
+		border: none;
+		color: $accent-color;
+		border-image: linear-gradient(
+				0deg,
+				transparent,
+				rgba(white, 0.25),
+				transparent
+			)
+			1 100%;
+		border-left-width: 1px;
+		border-left-style: solid;
+		transition: background-color 0.2s ease;
+		&:hover {
+			background-color: rgba(white, 0.15);
+		}
+		&:active {
+			background-color: rgba(white, 0.25);
+		}
+	}
+}
