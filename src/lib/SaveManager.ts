@@ -8,8 +8,7 @@ import {
 import { appDataDir } from '@tauri-apps/api/path'
 async function Init() {
 	await createDirIfNecessary()
-	const json = await getJSON()
-	console.log(json)
+	await createSaveFileIfNecessary();
 }
 
 async function createDirIfNecessary() {
@@ -17,6 +16,48 @@ async function createDirIfNecessary() {
 	const isExist = await exists(appDataDirPath)
 	if (isExist) return
 	await createDir(appDataDirPath)
+}
+
+async function deleteFile(path: string, type: 'folder' | 'file') {
+	const splittedPath = path.split('/');
+	const json = await getJSON();
+	const files = json.files;
+	let currFiles = files;
+	let currIndex = 0;
+	while (true) {
+		if (currIndex >= splittedPath.length - 1) {
+			const indexFileToDelete = currFiles.findIndex((obj) => obj.type === type && obj.name === splittedPath[splittedPath.length - 1]);
+			currFiles.splice(indexFileToDelete, 1);
+			return files;
+		}
+		const currFolder = currFiles.find((obj) => obj.name === splittedPath[currIndex] && obj.type === 'folder')
+		if (!!currFolder && currFolder.type === 'folder') {
+			currFiles = currFolder.content;
+			currIndex++;
+		} else {
+			return files;
+		}
+	}
+}
+
+
+
+function removeByIndex(array: Array<any>, index: number) {
+	if (index < 0 || index >= array.length) {
+	  return array;
+	}
+	array.splice(index, 1);
+	  return array
+  }
+
+async function createSaveFileIfNecessary() {
+	const isExist = await exists('save00.json', {dir: BaseDirectory.AppData});
+	if (isExist) return
+	await createSaveFile();
+}
+
+async function createSaveFile() {
+	await writeTextFile('save00.json', JSON.stringify({files: []}), {dir: BaseDirectory.AppData});
 }
 
 async function getJSON(): Promise<SaveFileType> {
@@ -63,6 +104,13 @@ async function WriteJSON(json: SaveFileType) {
 	})
 }
 
+async function createFolder(path: string) {
+	const json = { ...(await getJSON())}
+	const splittedPath = path.split('/');
+	const newJSON = PasteFileIntoJSON(splittedPath,json.files);
+	await WriteJSON({files: newJSON});
+}
+
 async function saveFile(
 	filename: string,
 	filepath?: string,
@@ -75,34 +123,24 @@ async function saveFile(
 		uri: filepath ?? '',
 	})
 	await WriteJSON({ files: newJSON })
-	// let alreadyExist = json.files.reduce(
-	// 	(acc, obj) =>
-	// 		acc || (obj.type === 'file' && obj.content?.name === filename),
-	// 	false
-	// )
-	// if (alreadyExist) return 0
-	// json.files.push({
-	// 	type: 'file',
-	// 	name: filename,
-	// 	content: { name: filename, uri: filepath ?? '' },
-	// })
-	// await WriteJSON(json)
 }
 
 function PasteFileIntoJSON(
 	path: string[],
 	files: ArrayType,
-	file: FileContentType
+	file?: FileContentType
 ) {
 	function IterateFolders(files: ArrayType, pathIndex: number) {
 		if (pathIndex > path.length - 1) {
+			if (!file) return;
 			const fileAlreadyExist =
 				files.findIndex(
 					obj => obj.type === 'file' && obj.name === file.name
-				) === -1
-					? false
-					: true
-			if (fileAlreadyExist) return
+				)
+			if (fileAlreadyExist !== -1) {
+				files[fileAlreadyExist].content = file;
+				return;
+			}
 			files.push({ type: 'file', name: file.name, content: file })
 			return
 		}
@@ -122,5 +160,5 @@ function PasteFileIntoJSON(
 	return files
 }
 
-export { Init, getFilesInFolder, getJSON, saveFile }
+export { Init, getFilesInFolder, getJSON, saveFile, createFolder, deleteFile };
 export type { ArrayType }

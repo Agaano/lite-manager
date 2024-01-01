@@ -1,0 +1,28 @@
+@import '../colors.scss';
+
+.wrapper {
+    position: absolute;
+    border: 1px solid $accent-color;
+    width: 200px;
+    height: fit-content;
+    background-color: $background-color;
+    box-sizing: border-box;
+    ul {
+        width: 100%;
+        height: fit-content;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+
+        li {
+            width: 80%;
+            padding-inline: 10%;
+            padding-block: 10px; 
+            background-color: transparent;
+            user-select: none;
+            &:hover {
+                background-color: rgba(white, 0.25);
+            }
+        }
+    }
+}

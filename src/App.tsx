@@ -9,8 +9,8 @@ function App() {
 	useEffect(() => {
 		;(async () => {
 			await Init()
-			console.log(await getFilesInFolder('get'))
 		})()
+		document.addEventListener('contextmenu', e => e.preventDefault())
 	}, [])
 
 	return (

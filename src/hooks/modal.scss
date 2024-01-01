@@ -1,0 +1,26 @@
+@import '../colors.scss';
+
+.modal-window-wrapper {
+    position: absolute;
+    display: none;
+    inset: 0;
+    z-index: 7;
+    background-color: #2e2e2e99;
+    &.open {
+        display: block;
+    }
+}
+
+.modal-window-content {
+    position: absolute;
+    width: fit-content;
+    height: fit-content;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);   
+    z-index: 8;
+    background-color: $background-color;
+    border: 1px solid $accent-color;
+    border-radius: 10px;
+    padding: 15px;
+}
