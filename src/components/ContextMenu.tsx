@@ -7,12 +7,22 @@ type OptionType = {
 }
 
 
-export default ({options, show, x,y} : {options: OptionType[], show: boolean, x:number, y: number}) => {
+export default ({options, show, x,y, setShow} : {options: OptionType[], show: boolean, x:number, y: number, setShow: (bool: boolean) => void}) => {
+    const ref = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        window.addEventListener('click', (e) => {
+            //@ts-ignore
+            if (!ref.current?.contains(e.target)) {
+                setShow(false);
+            }
+        })
+    }, [])
     return (
-        <div className={styles.wrapper} style = {{top: y, left: x, display: show ? 'block' : 'none'}} >
+        <div className={styles.wrapper} ref = {ref} style = {{top: y, left: x, display: show ? 'block' : 'none'}} >
             <ul>
                 {options.map((option) => (
-                    <li onClick = {() => {option.onClick; show = false}}>{option.title}</li>
+                    <li onClick = {async () => {await option.onClick(); setShow(false)}}>{option.title}</li>
                 ))}
             </ul>
         </div>

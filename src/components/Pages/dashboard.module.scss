@@ -44,6 +44,15 @@
 	flex-wrap: wrap;
 }
 
+.flex {
+	display: flex;
+	column-gap: 5px;
+	h4 {
+		width: fit-content;
+		height: 100%;
+	}
+}
+
 .file {
 	user-select: none;
 	background-color: transparent;

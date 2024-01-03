@@ -28,6 +28,7 @@ async function deleteFile(path: string, type: 'folder' | 'file') {
 		if (currIndex >= splittedPath.length - 1) {
 			const indexFileToDelete = currFiles.findIndex((obj) => obj.type === type && obj.name === splittedPath[splittedPath.length - 1]);
 			currFiles.splice(indexFileToDelete, 1);
+			await WriteJSON({files: files});
 			return files;
 		}
 		const currFolder = currFiles.find((obj) => obj.name === splittedPath[currIndex] && obj.type === 'folder')
@@ -40,6 +41,28 @@ async function deleteFile(path: string, type: 'folder' | 'file') {
 	}
 }
 
+async function renameFile(path: string, type: 'folder' | 'file', newName: string) {
+	const json = await getJSON();
+	const files = json.files;
+	const splittedPath = path.split('/');
+	let currFiles = files;
+	let currIndex = 0;
+	while (true) {
+		if (currIndex >= splittedPath.length - 1) {
+			const targetIndex = currFiles.findIndex((obj) => obj.name === splittedPath[currIndex] && obj.type === type);
+			if (targetIndex === -1) return;
+			currFiles[targetIndex].name = newName;
+			await WriteJSON({files});
+		}
+		const newFiles = currFiles.find((obj) => obj.name === splittedPath[currIndex] && obj.type === 'folder');
+		if (newFiles && newFiles.type === 'folder') {
+			currFiles = newFiles.content;
+			currIndex++;
+		} else {
+			return;
+		}
+	}
+}
 
 
 function removeByIndex(array: Array<any>, index: number) {
@@ -160,5 +183,5 @@ function PasteFileIntoJSON(
 	return files
 }
 
-export { Init, getFilesInFolder, getJSON, saveFile, createFolder, deleteFile };
+export { Init, getFilesInFolder, getJSON, saveFile, createFolder, deleteFile, renameFile };
 export type { ArrayType }

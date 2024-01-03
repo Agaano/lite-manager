@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrayType, getFilesInFolder } from '../../lib/SaveManager'
+import { ArrayType, deleteFile, getFilesInFolder, renameFile } from '../../lib/SaveManager'
 import styles from './dashboard.module.scss'
 import useModal from '../../hooks/useModal'
 import CreateFileForm from '../CreateFileForm'
@@ -10,6 +10,9 @@ export default () => {
 	const [files, setFiles] = useState<ArrayType>([])
 	const [path, setPath] = useState<string[]>([])
 	const FormModal = useModal();
+	const RenameFormModal = useModal();
+	const [renameOptions, setRenameOptions] = useState<{path: string, type: 'file' | 'folder', name: string}>({path: '', type: 'folder', name: ''});
+	const [renameModalOpen, setRenameModalOpen] = useState(false);
 	const [formModalOpen, setFormModalOpen] = useState(false);
 	const [showContext, setShowContext] = useState(false);
 	const [contextPos, setContextPos] = useState({x: 0, y: 0});
@@ -68,34 +71,42 @@ export default () => {
 				</div>
 			</div>
 			<div>
-				{prevFiles.length > 1 && (
-					<button
-						className={styles.back_icon}
-						onClick={() => {
-							setFiles(prevFiles[prevFiles.length - 1])
-							const r = [...path]
-							r.pop()
-							setPath(r)
-							const s = [...prevFiles]
-							s.pop()
-							setPrevFiles(s)
-						}}
-					>
-						<img src="icons/back_icon.svg" width = {25}/>
-					</button>
-				)}
-				<h4>{path.join(' -> ')}</h4>
+				<div className = {styles.flex}>
+					{prevFiles.length > 1 && (
+						<button
+							className={styles.back_icon}
+							onClick={() => {
+								setFiles(prevFiles[prevFiles.length - 1])
+								const r = [...path]
+								r.pop()
+								setPath(r)
+								const s = [...prevFiles]
+								s.pop()
+								setPrevFiles(s)
+							}}
+						>
+							<img src="icons/back_icon.svg" width = {25}/>
+						</button>
+					)}
+					<h4>{path.join(' -> ')}</h4>
+				</div>
 				<div className={styles.files}>
 					{files.map((file, index) => (
 						<File
-							onBlur={() => {setShowContext(false)}}
 							key={index}
 							file={file}
 							onRightClick={(e) => {
 								setContextPos({x: e.clientX, y: e.clientY});
 								setShowContext(true);
-								setContextOptions([{onClick: () => console.log('asd'), title: 'Delete'},
-								{onClick: () => console.log('dsa'), title: 'Rename'}
+								setContextOptions([{onClick: async () => {
+									console.log('Invoking delete function')
+									await deleteFile([...path, file.name].join('/'), file.type)
+									await renderFiles()
+								}, title: 'Delete'},
+								{onClick: () => {
+									setRenameModalOpen(true);
+									setRenameOptions((prev) => ({...prev, path: [...path, file.name].join('/'), type: file.type}))
+								}, title: 'Rename'}
 							]);
 							}}
 							onDoubleClick={() => {
@@ -113,7 +124,19 @@ export default () => {
 			<FormModal open = {formModalOpen} setOpen={setFormModalOpen}>
 				<CreateFileForm turnOff={() => {setFormModalOpen(false)}} reloadFiles={renderFiles} currentPath={path.length > 0 ? path.join('/') : undefined} />
 			</FormModal>
-			<ContextMenu options={contextOptions} show={showContext} x={contextPos.x} y = {contextPos.y} />
+			<RenameFormModal open = {renameModalOpen} setOpen={setRenameModalOpen}>
+				<form onSubmit = {async (e) => {
+					e.preventDefault();
+					await renameFile(renameOptions.path, renameOptions.type, renameOptions.name)
+					await renderFiles();
+					setRenameModalOpen(false);
+					setRenameOptions({path: '', type: 'folder', name: ''})
+				}} >
+					<input value = {renameOptions.name} autoFocus onChange={(e) => setRenameOptions(prev => ({...prev, name: e.target.value}))}></input>
+					<button>Rename</button>
+				</form>
+			</RenameFormModal>
+			<ContextMenu setShow={setShowContext} options={contextOptions} show={showContext} x={contextPos.x} y = {contextPos.y} />
 		</>
 	)
 }
@@ -122,13 +145,11 @@ function File({
 	file,
 	onDoubleClick,
 	onRightClick,
-	onBlur,
 	className,
 }: {
 	file: any
 	onDoubleClick: React.MouseEventHandler<HTMLButtonElement>
 	onRightClick: React.MouseEventHandler<HTMLButtonElement>
-	onBlur: () => void;
 	className?: string;
 }) {
 	const [focus, setFocus] = useState(false);
@@ -152,9 +173,8 @@ function File({
 			}}
 			onBlur={() => {
 				setFocus(false);
-				onBlur();
 			}}
-			className={`${className}`}
+			className={className}
 		>
 			<img src={`icons/${file.type}_icon.svg`} width={50} />
 			<span>{!focus ? splitWord(file.name) : file.name}</span>

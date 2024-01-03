@@ -44,26 +44,29 @@ async function getJSON() {
       }
 }
 
-async function deleteFile(path: string, type: 'folder' | 'file') {
-	const splittedPath = path.split('/');
+async function renameFile(path, type, newName) {
 	const json = await getJSON();
 	const files = json.files;
+	const splittedPath = path.split('/');
+  console.log(JSON.stringify(files, null, 2));
 	let currFiles = files;
 	let currIndex = 0;
 	while (true) {
 		if (currIndex >= splittedPath.length - 1) {
-			const indexFileToDelete = currFiles.findIndex((obj) => obj.type === type && obj.name === splittedPath[splittedPath.length - 1]);
-			currFiles.splice(indexFileToDelete, 1);
-			return files;
+			const targetIndex = currFiles.findIndex((obj) => obj.name === splittedPath[currIndex] && obj.type === type);
+			if (targetIndex === -1) return;
+			currFiles[targetIndex].name = newName;
+      console.log(JSON.stringify(files, null, 2));
+			await WriteJSON({files});
 		}
-		const currFolder = currFiles.find((obj) => obj.name === splittedPath[currIndex] && obj.type === 'folder')
-		if (!!currFolder && currFolder.type === 'folder') {
-			currFiles = currFolder.content;
+		const newFiles = currFiles.find((obj) => obj.name === splittedPath[currIndex] && obj.type === 'folder');
+		if (newFiles && newFiles.type === 'folder') {
+			currFiles = newFiles.content;
 			currIndex++;
 		} else {
-			return files;
+			return;
 		}
 	}
 }
 
-deleteFile('Folder1', '')
+renameFile('Folder1/Folder1.1', 'folder', 'Foldddd')
