@@ -6,6 +6,9 @@
 	height: 40px;
 	display: flex;
 	justify-content: space-between;
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
 	align-items: center;
 	span {
 		padding-left: 15px;

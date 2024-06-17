@@ -1,6 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 
-type pages =
+export type PagesType =
 	| 'dashboard'
 	| 'settings'
 	| 'sandbox'
@@ -22,7 +22,7 @@ const pagesInfo = {
 }
 
 type RouterType = {
-	current: pages
+	current: PagesType
 	title: string
 	body?: { [key: string]: any }
 }
@@ -35,7 +35,7 @@ const routerSlice = createSlice({
 	reducers: {
 		navigate: (
 			state,
-			action: PayloadAction<{ page: pages; body?: { [key: string]: any } }>
+			action: PayloadAction<{ page: PagesType; body?: { [key: string]: any } }>
 		) => {
 			state.title =
 				pagesInfo[action.payload.page] + (action.payload.body?.name ?? '')

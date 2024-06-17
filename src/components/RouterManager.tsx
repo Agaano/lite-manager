@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '../redux/store'
 import dashboard from './Pages/dashboard'
+import fileEditor from './Pages/fileEditor'
 
 export default () => {
 	const router = useSelector((state: RootState) => state.router)
@@ -13,7 +14,7 @@ export default () => {
 		bugreport: () => <></>,
 		support: () => <></>,
 		folder: () => <></>,
-		file: () => <></>,
+		file: fileEditor,
 	}
 	const Page = useMemo(() => {
 		if (!pages[router.current]) return () => <></>

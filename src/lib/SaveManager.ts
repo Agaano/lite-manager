@@ -119,6 +119,7 @@ type FileType = { type: 'file'; name: string; content: FileContentType }
 type FileContentType = {
 	name: string
 	uri: string
+	body: {[key:string]: any}
 }
 
 async function WriteJSON(json: SaveFileType) {
@@ -144,6 +145,7 @@ async function saveFile(
 	const newJSON = PasteFileIntoJSON(path, json.files, {
 		name: filename,
 		uri: filepath ?? '',
+		body: body ?? null,
 	})
 	await WriteJSON({ files: newJSON })
 }

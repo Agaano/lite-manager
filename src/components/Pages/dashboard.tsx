@@ -4,6 +4,9 @@ import styles from './dashboard.module.scss'
 import useModal from '../../hooks/useModal'
 import CreateFileForm from '../CreateFileForm'
 import ContextMenu from '../ContextMenu'
+import { useDispatch } from 'react-redux'
+import { PagesType } from '../../redux/slices/routerSlice'
+import { navigate } from '../../redux/slices/routerSlice'
 
 export default () => {
 	const [prevFiles, setPrevFiles] = useState<ArrayType[]>([[]])
@@ -17,6 +20,7 @@ export default () => {
 	const [showContext, setShowContext] = useState(false);
 	const [contextPos, setContextPos] = useState({x: 0, y: 0});
 	const [contextOptions, setContextOptions] = useState([{onClick: () => {}, title: 'Title'}])
+	const dispatch = useDispatch();
 	useEffect(() => {
 		renderFiles();
 	}, [])
@@ -99,7 +103,6 @@ export default () => {
 								setContextPos({x: e.clientX, y: e.clientY});
 								setShowContext(true);
 								setContextOptions([{onClick: async () => {
-									console.log('Invoking delete function')
 									await deleteFile([...path, file.name].join('/'), file.type)
 									await renderFiles()
 								}, title: 'Delete'},
@@ -112,8 +115,10 @@ export default () => {
 							onDoubleClick={() => {
 								if (file.type === 'folder') {
 									setPrevFiles([...prevFiles, files])
-									setFiles(file.content)
+									setFiles(file.content);
 									setPath(prev => [...prev, file.name])
+								} else {
+									dispatch(navigate({page: 'file', body: {file: file, name: file.name}}))
 								}
 							}}
 							className={styles.file}
